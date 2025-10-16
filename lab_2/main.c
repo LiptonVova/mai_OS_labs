@@ -24,6 +24,26 @@ static volatile int32_t count_total = 0;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+double sequential_calculate(int count_iterations, double R, int seed) {
+    // функция для последовательного вычисления 
+    double x, y;
+    int count_in_circle = 0;
+    int count_total = 0;
+
+    for (size_t i = 0; i < count_iterations; ++i) {
+        x = (double)rand_r(&seed) / RAND_MAX * R;
+        y = (double)rand_r(&seed) / RAND_MAX * R;
+
+
+        if (x * x + y * y <= R * R) {
+            ++count_in_circle;
+        }
+    }
+
+    count_total += count_iterations;
+    return 4 * R * R * (count_in_circle/(double)count_total);
+}
+
 static void *work(void *_args) {
     ThreadArgs *args = (ThreadArgs *)_args;
     int n = args->count_iterations;
@@ -133,13 +153,28 @@ int main(int argc, char* argv[]) {
     double time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
 
     double square = 4 * (count_in_circle/(double)count_total) * R * R;
+    printf("Parallel version:\n");
     printf("***\nSquare circle: %lf\n", square);
     printf("Working time: %lfs\n", time);
     printf("Count threads: %ld\n", n_threads);
-    printf("***\n");
+    printf("***\n\n");
 
     free(thread_args);
     free(threads);
+
+
+    printf("Sequntial version:\n");
+    
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    double result = sequential_calculate(count, R, rand());
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    printf("***\nSquare circle: %lf\n", result);
+    printf("Working time: %lfs\n", time);
+    printf("***\n");
+
 
     return 0;
 }
