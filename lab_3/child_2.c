@@ -21,7 +21,19 @@ const char SEM_NAME_SERVER[] = "example-1-sem-server";
 const char SEM_NAME_CHILD_1[] = "example-1-sem-child-1";
 const char SEM_NAME_CHILD_2[] = "example-1-sem-child-2";
 
-int main() {
+int main(int argc, char**argv) {
+    if (argc < 5) {
+        const char msg[] = "error: not enough arguments\n";
+        write(STDERR_FILENO, msg, sizeof(msg));
+        _exit(EXIT_FAILURE);
+    }
+
+    const char *SHM_NAME = argv[1];
+    const char *SEM_NAME_SERVER = argv[2];
+    const char *SEM_NAME_CHILD_1 = argv[3];
+    const char *SEM_NAME_CHILD_2 = argv[4];
+
+
     int shm = shm_open(SHM_NAME, O_RDWR, 0600);
     if (shm == -1) {
         const char msg[] = "error: failed to open SHM\n";

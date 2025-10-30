@@ -12,16 +12,27 @@
 #include <wait.h>
 #include <semaphore.h>
 
+#include <stdio.h>
+
 
 #define SHM_SIZE 4096
 
-const char SHM_NAME[] = "shm-name";
-const char SEM_NAME_SERVER[] = "example-1-sem-server";
-const char SEM_NAME_CHILD_1[] = "example-1-sem-child-1";
-const char SEM_NAME_CHILD_2[] = "example-1-sem-child-2";
+char SHM_NAME[1024] = "shm-name";
+char SEM_NAME_SERVER[1024] = "sem-server";
+char SEM_NAME_CHILD_1[1024] = "sem-child-1";
+char SEM_NAME_CHILD_2[1024] = "sem-child-2";
 
 
 int main() {
+    char unique_suffix[64] = "\0";
+    snprintf(unique_suffix, sizeof(unique_suffix), "%d", getpid());
+
+    snprintf(SHM_NAME, sizeof(SHM_NAME), "%s", unique_suffix);
+    snprintf(SEM_NAME_SERVER, sizeof(SEM_NAME_SERVER), "%s", unique_suffix);
+    snprintf(SEM_NAME_CHILD_1, sizeof(SEM_NAME_CHILD_1), "%s", unique_suffix);
+    snprintf(SEM_NAME_CHILD_2, sizeof(SEM_NAME_CHILD_2), "%s", unique_suffix);
+
+
     int shm = shm_open(SHM_NAME, O_RDWR, 0600);
     if (shm == -1 && errno != ENOENT) {
         // enoent - ошибка: нет такого файла или каталога
@@ -86,7 +97,7 @@ int main() {
 
     if (child_1 == 0) {
         // значит мы находимся в дочернем процессе
-        char *args[] = {"child_1", NULL};
+        char *args[] = {"child_1", SHM_NAME, SEM_NAME_SERVER, SEM_NAME_CHILD_1, SEM_NAME_CHILD_2, NULL};
         execv("./child_1", args);
 
         const char msg[] = "error: failed to exec\n";
@@ -103,7 +114,7 @@ int main() {
 
     if (child_2 == 0) {
         // находимся в дочернем процессе
-        char *args[] = {"child_2", NULL};
+        char *args[] = {"child_2", SHM_NAME, SEM_NAME_SERVER, SEM_NAME_CHILD_1, SEM_NAME_CHILD_2, NULL};
         execv("./child_2", args);
 
         const char msg[] = "error: failed to exec\n";
