@@ -18,6 +18,14 @@ gcc -o liblibrary_2.so -shared -fPIC library_2.c
 ```
 gcc dynamic.c -o dynamic.out
 ```
+
+### 3. Скомпилировать программу, которая использует динамическую библиотеку во время линковки
+
+```
+gcc static.c ./liblibrary_1.so -o static_1.out
+gcc static.c ./liblibrary_2.so -o static_2.out
+```
+
 ## Статические библиотеки
 ### 1. Скомпилировать объектный файл библиотеки
 
